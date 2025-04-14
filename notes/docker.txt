@@ -1,0 +1,5 @@
+Run this command to download clisp image:
+docker pull clfoundation/clisp
+
+Run this command to run clisp container:
+docker run -it --rm -v C:\Users\anton\Code\Karlstad-University\Programming-languages-DVGC01\Lab2-Lisp-Parser:/app -w /app clfoundation/clisp bash 
