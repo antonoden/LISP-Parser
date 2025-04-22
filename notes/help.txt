@@ -1,0 +1,2 @@
+Run file terminal:
+clisp parser.lsp

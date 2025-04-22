@@ -15,6 +15,18 @@
 (defun whitespace (c)  (member c '(#\Space #\Tab #\Newline)))
 
 ;;=====================================================================
+;; printing functions
+;;=====================================================================
+
+(defun in (str)
+   (format t " *** In ~S ~%" str)
+)
+
+(defun out (str)
+   (format t " *** Out ~S ~%" str)
+)
+
+;;=====================================================================
 ;; get-wspace   remove whitespace
 ;;=====================================================================
 
@@ -91,14 +103,41 @@
 (defun map-lexeme (lexeme)
 (format t "Symbol: ~S ~%" lexeme)
    (list (cond
+         ((string=   lexeme ""       )	 'EOF     )
+         ;; keywords
          ((string=   lexeme "program")  'PROGRAM )
          ((string=   lexeme "var"    )  'VAR     )
-
-;; etc,  *** TO BE DONE ***
-
-         ((string=   lexeme ""       )	'EOF     )
+         ((string=   lexeme "input"  )	 'INPUT   )
+         ((string=   lexeme "output" )	 'OUTPUT  )
+         ((string=   lexeme "begin"  )	 'BEGIN   )
+         ((string=   lexeme "end"    )	 'END     )
+         ((string=   lexeme "boolean")  'BOOLEAN )
+         ((string=   lexeme "integer")	 'INTEGER )
+         ((string=   lexeme "real"   )  'REAL    )
+         ;; tokens
+         ((string=   lexeme ":="     )	 'ASSIGN  )
+         ((string=   lexeme "predef" )	 'PREDEF  )
+         ((string=   lexeme "tempty" )	 'TEMPTY  )
+         ((string=   lexeme "undef"  )	 'UNDEF   )
+         ((string=   lexeme "error"  )	 'ERROR   )
+         ((string=   lexeme "type"   )	 'TYPE    )
+         ;; single character tokens
+         ((string=   lexeme "$"      )	 '$       )
+         ((string=   lexeme "("      )	 'LPAREN  )
+         ((string=   lexeme ")"      )	 'RPAREN  )
+         ((string=   lexeme "*"      )	 '*       )
+         ((string=   lexeme "+"      )	 '+       )
+         ((string=   lexeme ","      )	 'COMMA   )
+         ((string=   lexeme "-"      )	 '-       )
+         ((string=   lexeme "."      )	 'DOT     )
+         ((string=   lexeme "/"      )	 '/       )
+         ((string=   lexeme ":"      )	 ':       )
+         ((string=   lexeme ";"      )	 'SCOLON  )
+         ((string=   lexeme "="      )	 '=       )
+         ;; lastly check if lexeme is id or number
          ((is-id     lexeme          )  'ID      )
          ((is-number lexeme          )  'NUM     )
+         ;; No approved symbol found in table
          (t                             'UNKNOWN )
          )
     lexeme)
@@ -107,13 +146,38 @@
 ;;=====================================================================
 ; ID is [A-Z,a-z][A-Z,a-z,0-9]*          number is [0-9][0-9]*
 ;;=====================================================================
+(defun is-id-head (str)
+   (if (alpha-char-p (char str 0))
+      t
+      nil
+   )
+)
+
+(defun is-id-tail (str)
+   (if (string= str "")
+      t
+      (if (alphanumericp (char str 0))
+         (is-id-tail (subseq str 1))
+         nil 
+      )
+   )
+)
 
 (defun is-id (str)
-;; *** TO BE DONE ***
+   (if (is-id-head str)
+      (if (is-id-tail str) t nil)
+      nil
+   )
 )
 
 (defun is-number (str)
-;; *** TO BE DONE ***
+   (if (string= str "")
+      t
+      (if (digit-char-p (char str 0))
+         (is-number (subseq str 1))
+         nil 
+      )
+   )
 )
 
 ;;=====================================================================
@@ -121,13 +185,14 @@
 ;;=====================================================================
 
 ;;=====================================================================
-; Create a stucture - parse state descriptor
+; Create a structure - parse state descriptor
 ;;=====================================================================
 ; lookahead is the list (token, lexeme)
 ; stream    is the input filestream
 ; nextchar  is the char following the last lexeme read
 ; status    is the parse status (OK, NOTOK)
 ; symtab    is the symbol table
+; isdebug   when !=nil does debugging printing
 ;;=====================================================================
 
 (defstruct pstate
@@ -136,6 +201,7 @@
     (nextchar)
     (status)
     (symtab)
+    (isdebug)
 )
 
 ;;=====================================================================
@@ -150,6 +216,7 @@
       :nextchar      #\Space
       :status        'OK
       :symtab        ()
+      :isdebug       t
     )
 )
 
@@ -162,9 +229,11 @@
 ; lexeme - returns the lexeme from (token lexeme)(reader)
 ;;=====================================================================
 
-(defun token  (state) ;; *** TO BE DONE ***
+(defun token  (state)
+   (first (pstate-lookahead state))
 )
-(defun lexeme (state) ;; *** TO BE DONE ***
+(defun lexeme (state)
+   (second (pstate-lookahead state))
 )
 
 ;;=====================================================================
@@ -264,7 +333,58 @@
 ; <operand>       --> id | number
 ;;=====================================================================
 
-;; *** TO BE DONE ***
+(defun operand (state)
+   (if (pstate-isdebug state) (in "operand"))
+)
+
+(defun factor (state)
+   (if (pstate-isdebug state) (in "factor"))
+)
+
+
+(defun term (state)
+   (if (pstate-isdebug state) (in "term"))
+   (factor state)
+   (if (eq (token state) '*)
+      (progn (match state '*) term(state) )
+   )
+)
+
+(defun expr (state)
+   (if (pstate-isdebug state) (in "expr"))
+   (term state)
+   (if (eq (token state) '+)
+      (progn (match state '+) expr(state) )
+   )
+)
+
+(defun assign-stat (state)
+   (if (pstate-isdebug state) (in "assign stat"))
+   (match state 'ID)
+   (match state 'ASSIGN)
+   (expr state)
+)
+
+(defun stat (state)
+   (if (pstate-isdebug state) (in "stat"))
+   (assign-stat state)
+)
+
+(defun stat-list (state)
+   (if (pstate-isdebug state) (in "stat list"))
+   (stat state)
+   (if (eq (token state) 'SCOLON)
+      (progn (match state 'SCOLON) (stat-list state) )
+   )
+)
+
+(defun stat-part (state)
+   (if (pstate-isdebug state) (in "stat part"))
+   (match state 'BEGIN)
+   (stat-list state)
+   (match state 'END)
+   (match state 'DOT)
+)
 
 ;;=====================================================================
 ; <var-part>     --> var <var-dec-list>
@@ -274,13 +394,67 @@
 ; <type>         --> integer | real | boolean
 ;;=====================================================================
 
-;; *** TO BE DONE ***
+(defun typ (state)
+   (if (pstate-isdebug state) (in "typ"))
+   (cond 
+      ( (eq (token state) 'BOOLEAN) (match state 'BOOLEAN) )
+      ( (eq (token state) 'INTEGER) (match state 'INTEGER) )
+      ( (eq (token state) 'REAL   ) (match state 'REAL   ) )
+      (t                            (synerr2 state       ) )  
+   )
+)
+
+(defun id-list (state)
+   (if (pstate-isdebug state) (in "id-list"))
+   (if (eq (first (map-lexeme (lexeme state))) 'ID) ;; if lookahead == ID
+      (if (symtab-member state (lexeme state)) 
+         (semerr1 state)                           ;; if ID already added = error
+         (symtab-add state (lexeme state))        
+      )
+   )
+   (match state 'ID)
+   (if (eq (token state) 'COMMA)    ;; if comma, except more IDs in list
+      (progn (match state 'COMMA) (id-list state) )
+   )
+)
+
+(defun var-dec (state)
+   (if (pstate-isdebug state) (in "var-dec"))
+   (id-list state)
+   (match state ':)
+   (typ state)
+   (match state 'SCOLON)
+)
+
+(defun var-dec-list (state)
+   (if (pstate-isdebug state) (in "var-dec-list"))
+   (var-dec state)
+   (if (eq (token state) 'ID)
+      (var-dec state)
+   )
+)
+
+(defun var-part (state)
+   (if (pstate-isdebug state) (in "var part"))
+   (match state 'VAR)
+   (var-dec-list state)
+)
 
 ;;=====================================================================
 ; <program-header>
 ;;=====================================================================
 
-;; *** TO BE DONE ***
+(defun program-header (state)
+   (if (pstate-isdebug state) (in "program header"))
+   (match state 'PROGRAM)
+   (match state 'ID)
+   (match state 'LPAREN)
+   (match state 'INPUT)
+   (match state 'COMMA)
+   (match state 'OUTPUT)
+   (match state 'RPAREN)
+   (match state 'SCOLON)
+)
 
 ;;=====================================================================
 ; <program> --> <program-header><var-part><stat-part>
@@ -327,7 +501,6 @@
 ;;=====================================================================
 
 (defun parse-all ()
-
 ;; *** TO BE DONE ***
 
 )
@@ -336,13 +509,14 @@
 ; THE PARSER - test all files
 ;;=====================================================================
 
-;; (parse-all)
+
+;;(parse-all)
 
 ;;=====================================================================
 ; THE PARSER - test a single file
 ;;=====================================================================
 
-;;(parse "testfiles/testok1.pas")
+(parse "testfiles/testok1.pas")
 
 ;;=====================================================================
 ; THE PARSER - end of code
