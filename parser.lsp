@@ -344,17 +344,53 @@
 ; <operand>       --> id | number
 ;;=====================================================================
 
-(defun operand (state)
-   (if (pstate-isdebug state) (in "operand"))
-   (cond
-      ( (eq (token state) 'NUM) (match state 'NUM) )
-      ( (eq (token state) 'ID ) 
-            (if (symtab-member state (lexeme state))
-               (match state 'ID)
-               (semerr2 state)
-            )
-      )
-      ( t                          (synerr3 state) )
+(defun stat-part (state)
+   (if (pstate-isdebug state) (in "stat part"))
+   (match state 'BEGIN)
+   (stat-list state)
+   (match state 'END)
+   (match state 'FSTOP)
+)
+
+(defun stat-list (state)
+   (if (pstate-isdebug state) (in "stat list"))
+   (stat state)
+   (if (eq (token state) 'SCOLON)
+      (progn (match state 'SCOLON) (stat-list state) )
+   )
+)
+
+(defun stat (state)
+   (if (pstate-isdebug state) (in "stat"))
+   (assign-stat state)
+)
+
+(defun assign-stat (state)
+   (if (pstate-isdebug state) (in "assign stat"))
+   (if (eq (token state) 'ID)
+      (if (symtab-member state (lexeme state))
+            nil
+            (semerr2 state)
+      )      
+   )
+   (match state 'ID)
+   (match state 'ASSIGN)
+   (expr state)
+)
+
+(defun expr (state)
+   (if (pstate-isdebug state) (in "expr"))
+   (term state)
+   (if (eq (token state) '+)
+      (progn (match state '+) (expr state) )
+   )
+)
+
+(defun term (state)
+   (if (pstate-isdebug state) (in "term"))
+   (factor state)
+   (if (eq (token state) '*)
+      (progn (match state '*) (term state) )
    )
 )
 
@@ -369,55 +405,18 @@
    )
 )
 
-
-(defun term (state)
-   (if (pstate-isdebug state) (in "term"))
-   (factor state)
-   (if (eq (token state) '*)
-      (progn (match state '*) (term state) )
-   )
-)
-
-(defun expr (state)
-   (if (pstate-isdebug state) (in "expr"))
-   (term state)
-   (if (eq (token state) '+)
-      (progn (match state '+) (expr state) )
-   )
-)
-
-(defun assign-stat (state)
-   (if (pstate-isdebug state) (in "assign stat"))
-   (if (eq (token state) 'ID)
-      (if (symtab-member state (lexeme state))
-            (match state 'ID)
-            (semerr2 state)
+(defun operand (state)
+   (if (pstate-isdebug state) (in "operand"))
+   (cond
+      ( (eq (token state) 'NUM) (match state 'NUM) )
+      ( (eq (token state) 'ID ) 
+            (if (symtab-member state (lexeme state))
+               (match state 'ID)
+               (semerr2 state)
+            )
       )
-      (match state 'ID)
+      ( t                          (synerr3 state) )
    )
-   (match state 'ASSIGN)
-   (expr state)
-)
-
-(defun stat (state)
-   (if (pstate-isdebug state) (in "stat"))
-   (assign-stat state)
-)
-
-(defun stat-list (state)
-   (if (pstate-isdebug state) (in "stat list"))
-   (stat state)
-   (if (eq (token state) 'SCOLON)
-      (progn (match state 'SCOLON) (stat-list state) )
-   )
-)
-
-(defun stat-part (state)
-   (if (pstate-isdebug state) (in "stat part"))
-   (match state 'BEGIN)
-   (stat-list state)
-   (match state 'END)
-   (match state 'FSTOP)
 )
 
 ;;=====================================================================
@@ -428,14 +427,26 @@
 ; <type>         --> integer | real | boolean
 ;;=====================================================================
 
-(defun typ (state)
-   (if (pstate-isdebug state) (in "typ"))
-   (cond 
-      ( (eq (token state) 'BOOLEAN) (match state 'BOOLEAN) )
-      ( (eq (token state) 'INTEGER) (match state 'INTEGER) )
-      ( (eq (token state) 'REAL   ) (match state 'REAL   ) )
-      (t                            (synerr2 state       ) )  
+(defun var-part (state)
+   (if (pstate-isdebug state) (in "var part"))
+   (match state 'VAR)
+   (var-dec-list state)
+)
+
+(defun var-dec-list (state)
+   (if (pstate-isdebug state) (in "var-dec-list"))
+   (var-dec state)
+   (if (eq (token state) 'ID)
+      (var-dec-list state)
    )
+)
+
+(defun var-dec (state)
+   (if (pstate-isdebug state) (in "var-dec"))
+   (id-list state)
+   (match state 'COLON)
+   (typ state)
+   (match state 'SCOLON)
 )
 
 (defun id-list (state)
@@ -452,26 +463,14 @@
    )
 )
 
-(defun var-dec (state)
-   (if (pstate-isdebug state) (in "var-dec"))
-   (id-list state)
-   (match state 'COLON)
-   (typ state)
-   (match state 'SCOLON)
-)
-
-(defun var-dec-list (state)
-   (if (pstate-isdebug state) (in "var-dec-list"))
-   (var-dec state)
-   (if (eq (token state) 'ID)
-      (var-dec-list state)
+(defun typ (state)
+   (if (pstate-isdebug state) (in "typ"))
+   (cond 
+      ( (eq (token state) 'BOOLEAN) (match state 'BOOLEAN) )
+      ( (eq (token state) 'INTEGER) (match state 'INTEGER) )
+      ( (eq (token state) 'REAL   ) (match state 'REAL   ) )
+      (t                            (synerr2 state       ) )  
    )
-)
-
-(defun var-part (state)
-   (if (pstate-isdebug state) (in "var part"))
-   (match state 'VAR)
-   (var-dec-list state)
 )
 
 ;;=====================================================================
@@ -504,7 +503,14 @@
 ;;=====================================================================
 
 (defun check-end (state)
-;; *** TO BE DONE ***
+   (if (eq (token state) 'EOF)
+      t
+      (progn 
+         (get-token state) 
+         (check-end state)
+         (setf (pstate-status state) 'NOTOK) 
+      )
+   )
 )
 
 ;;=====================================================================
@@ -545,31 +551,7 @@
 )
 
 (defun parse-all ()
-   ;; List all functions within file
-   (format t 
-"i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
-I I I I I I I      8     8   8           8     8     o  8    8
-I  \ `+' /  I      8         8           8     8        8    8
- \  `-+-'  /       8         8           8      ooooo   8oooo
-  `-__|__-'        8         8           8           8  8
-      |            8     o   8           8     o     8  8
-------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
-
-Welcome to GNU CLISP 2.49 (2010-07-07) <http://clisp.cons.org/>
-
-Copyright (c) Bruno Haible, Michael Stoll 1992, 1993
-Copyright (c) Bruno Haible, Marcus Daniels 1994-1997
-Copyright (c) Bruno Haible, Pierpaolo Bernardi, Sam Steingold 1998
-Copyright (c) Bruno Haible, Sam Steingold 1999-2000
-Copyright (c) Sam Steingold, Bruno Haible 2001-2010
-
-Type :h and hit Enter for context help.
-")
-   (with-open-file (stream "parser.lsp")
-    (loop for form = (read stream nil nil)
-          while form
-          when (and (listp form) (eq (car form) 'defun))
-          do (format t "~a~%" (second form))))
+   (p-header)
    (parse "testfiles/testa.pas")
    (parse "testfiles/testb.pas") 
    (parse "testfiles/testc.pas") 
@@ -613,7 +595,47 @@ Type :h and hit Enter for context help.
    (parse "testfiles/sem3.pas")
    (parse "testfiles/sem4.pas")
    (parse "testfiles/sem5.pas")
+   (p-footer)
    ;;(feed-parse-rec (sort (directory "testfiles/testfun*") #'string<))
+)
+
+(defun p-header ()
+;; headerpart
+   (format t 
+"i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
+I I I I I I I      8     8   8           8     8     o  8    8
+I  \\ `+' /  I      8         8           8     8        8    8
+ \\  `-+-'  /       8         8           8      ooooo   8oooo
+  `-__|__-'        8         8           8           8  8
+      |            8     o   8           8     o     8  8
+------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
+
+Welcome to GNU CLISP 2.49 (2010-07-07) <http://clisp.cons.org/>
+
+Copyright (c) Bruno Haible, Michael Stoll 1992, 1993
+Copyright (c) Bruno Haible, Marcus Daniels 1994-1997
+Copyright (c) Bruno Haible, Pierpaolo Bernardi, Sam Steingold 1998
+Copyright (c) Bruno Haible, Sam Steingold 1999-2000
+Copyright (c) Sam Steingold, Bruno Haible 2001-2010
+
+Type :h and hit Enter for context help.
+")
+;; List all functions within file
+   (with-open-file (stream "parser.lsp")
+      (loop for form = (read stream nil nil)
+          while form
+          when (and (listp form) (eq (car form) 'defun))
+          do (format t "~%~a" (second form))
+      )
+   )
+)
+
+(defun p-footer ()
+   (format t 
+"(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
+NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
+NIL NIL NIL NIL NIL)
+Bye.")
 )
 
 ;;=====================================================================

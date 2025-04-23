@@ -1,7 +1,7 @@
 i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
 I I I I I I I      8     8   8           8     8     o  8    8
-I   `+' /  I      8         8           8     8        8    8
-   `-+-'  /       8         8           8      ooooo   8oooo
+I  \ `+' /  I      8         8           8     8        8    8
+ \  `-+-'  /       8         8           8      ooooo   8oooo
   `-__|__-'        8         8           8           8  8
       |            8     o   8           8     o     8  8
 ------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
@@ -15,6 +15,7 @@ Copyright (c) Bruno Haible, Sam Steingold 1999-2000
 Copyright (c) Sam Steingold, Bruno Haible 2001-2010
 
 Type :h and hit Enter for context help.
+
 CTOS
 STR-CON
 WHITESPACE
@@ -45,26 +46,27 @@ SEMERR2
 SEMERR3
 GET-TOKEN
 MATCH
-OPERAND
-FACTOR
-TERM
-EXPR
-ASSIGN-STAT
-STAT
-STAT-LIST
 STAT-PART
-TYP
-ID-LIST
-VAR-DEC
-VAR-DEC-LIST
+STAT-LIST
+STAT
+ASSIGN-STAT
+EXPR
+TERM
+FACTOR
+OPERAND
 VAR-PART
+VAR-DEC-LIST
+VAR-DEC
+ID-LIST
+TYP
 PROGRAM-HEADER
 PROGRAM
 CHECK-END
 PARSE
 FEED-PARSE-REC
 PARSE-ALL
-
+P-HEADER
+P-FOOTER
 ------------------------------------------------------
 --- Parsing program: "testfiles/testa.pas"
 ------------------------------------------------------
@@ -450,10 +452,15 @@ Symbol: ";"
 Symbol: "begin"
 Symbol: "A"
 *** Semantic error: "A" not declared.
-*** Syntax error:   Expected ASSIGN   found "A"
-*** Semantic error: "A" not declared.
-*** Syntax error:   Expected END      found "A"
-*** Syntax error:   Expected FSTOP    found "A"
+Symbol: ":="
+Symbol: "B"
+Symbol: "+"
+Symbol: "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("B" "C")
 ------------------------------------------------------
@@ -716,6 +723,14 @@ Symbol: "="
 *** Syntax error:   Expected OPERAND  found "="
 *** Syntax error:   Expected END      found "="
 *** Syntax error:   Expected FSTOP    found "="
+Symbol: "B"
+Symbol: "+"
+Symbol: "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -749,6 +764,14 @@ Symbol: ":"
 *** Syntax error:   Expected OPERAND  found ":"
 *** Syntax error:   Expected END      found ":"
 *** Syntax error:   Expected FSTOP    found ":"
+Symbol: "B"
+Symbol: "+"
+Symbol: "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -856,6 +879,11 @@ Symbol: "B"
 Symbol: "C"
 *** Syntax error:   Expected END      found "C"
 *** Syntax error:   Expected FSTOP    found "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -891,6 +919,10 @@ Symbol: "C"
 Symbol: "-"
 *** Syntax error:   Expected END      found "-"
 *** Syntax error:   Expected FSTOP    found "-"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -1383,6 +1415,11 @@ Symbol: "C"
 *** Semantic error: "C" not declared.
 *** Syntax error:   Expected END      found "C"
 *** Syntax error:   Expected FSTOP    found "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B")
 ------------------------------------------------------
@@ -1416,6 +1453,15 @@ Symbol: "3"
 Symbol: "A"
 *** Syntax error:   Expected END      found "A"
 *** Syntax error:   Expected FSTOP    found "A"
+Symbol: ":="
+Symbol: "B"
+Symbol: "+"
+Symbol: "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -1449,6 +1495,15 @@ Symbol: ":"
 *** Syntax error:   Expected OPERAND  found ":"
 *** Syntax error:   Expected END      found ":"
 *** Syntax error:   Expected FSTOP    found ":"
+Symbol: "="
+Symbol: "B"
+Symbol: "+"
+Symbol: "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -1531,10 +1586,14 @@ Symbol: "2"
 Symbol: "end"
 Symbol: "."
 Symbol: "OOOOPS"
+Symbol: "!"
+Symbol: "!"
+Symbol: "!"
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
-Parse Successful.
+Parse Fail.
 ------------------------------------------------------
 
 ------------------------------------------------------
@@ -1564,6 +1623,13 @@ Symbol: "D"
 *** Semantic error: "D" not declared.
 *** Syntax error:   Expected END      found "D"
 *** Syntax error:   Expected FSTOP    found "D"
+Symbol: "+"
+Symbol: "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
 ------------------------------------------------------
@@ -1600,6 +1666,11 @@ Symbol: "C"
 *** Semantic error: "C" not declared.
 *** Syntax error:   Expected END      found "C"
 *** Syntax error:   Expected FSTOP    found "C"
+Symbol: "*"
+Symbol: "2"
+Symbol: "end"
+Symbol: "."
+Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B")
 ------------------------------------------------------
@@ -1736,3 +1807,7 @@ Symbol Table is: ("A" "B" "C" "D" "E" "F")
 ------------------------------------------------------
 Parse Successful.
 ------------------------------------------------------
+(NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
+NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL NIL
+NIL NIL NIL NIL NIL)
+Bye.
