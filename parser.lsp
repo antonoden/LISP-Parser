@@ -505,7 +505,8 @@
 (defun check-end (state)
    (if (eq (token state) 'EOF)
       t
-      (progn 
+      (progn
+         (semerr3 state) 
          (get-token state) 
          (check-end state)
          (setf (pstate-status state) 'NOTOK) 

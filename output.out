@@ -723,13 +723,21 @@ Symbol: "="
 *** Syntax error:   Expected OPERAND  found "="
 *** Syntax error:   Expected END      found "="
 *** Syntax error:   Expected FSTOP    found "="
+*** Semantic error: found "="      expected EOF.
 Symbol: "B"
+*** Semantic error: found "B"      expected EOF.
 Symbol: "+"
+*** Semantic error: found "+"      expected EOF.
 Symbol: "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -764,13 +772,21 @@ Symbol: ":"
 *** Syntax error:   Expected OPERAND  found ":"
 *** Syntax error:   Expected END      found ":"
 *** Syntax error:   Expected FSTOP    found ":"
+*** Semantic error: found ":"      expected EOF.
 Symbol: "B"
+*** Semantic error: found "B"      expected EOF.
 Symbol: "+"
+*** Semantic error: found "+"      expected EOF.
 Symbol: "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -879,10 +895,15 @@ Symbol: "B"
 Symbol: "C"
 *** Syntax error:   Expected END      found "C"
 *** Syntax error:   Expected FSTOP    found "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -919,9 +940,13 @@ Symbol: "C"
 Symbol: "-"
 *** Syntax error:   Expected END      found "-"
 *** Syntax error:   Expected FSTOP    found "-"
+*** Semantic error: found "-"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -1415,10 +1440,15 @@ Symbol: "C"
 *** Semantic error: "C" not declared.
 *** Syntax error:   Expected END      found "C"
 *** Syntax error:   Expected FSTOP    found "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B")
@@ -1453,14 +1483,23 @@ Symbol: "3"
 Symbol: "A"
 *** Syntax error:   Expected END      found "A"
 *** Syntax error:   Expected FSTOP    found "A"
+*** Semantic error: found "A"      expected EOF.
 Symbol: ":="
+*** Semantic error: found ":="     expected EOF.
 Symbol: "B"
+*** Semantic error: found "B"      expected EOF.
 Symbol: "+"
+*** Semantic error: found "+"      expected EOF.
 Symbol: "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -1495,14 +1534,23 @@ Symbol: ":"
 *** Syntax error:   Expected OPERAND  found ":"
 *** Syntax error:   Expected END      found ":"
 *** Syntax error:   Expected FSTOP    found ":"
+*** Semantic error: found ":"      expected EOF.
 Symbol: "="
+*** Semantic error: found "="      expected EOF.
 Symbol: "B"
+*** Semantic error: found "B"      expected EOF.
 Symbol: "+"
+*** Semantic error: found "+"      expected EOF.
 Symbol: "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -1586,9 +1634,13 @@ Symbol: "2"
 Symbol: "end"
 Symbol: "."
 Symbol: "OOOOPS"
+*** Semantic error: found "OOOOPS" expected EOF.
 Symbol: "!"
+*** Semantic error: found "!"      expected EOF.
 Symbol: "!"
+*** Semantic error: found "!"      expected EOF.
 Symbol: "!"
+*** Semantic error: found "!"      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -1623,12 +1675,19 @@ Symbol: "D"
 *** Semantic error: "D" not declared.
 *** Syntax error:   Expected END      found "D"
 *** Syntax error:   Expected FSTOP    found "D"
+*** Semantic error: found "D"      expected EOF.
 Symbol: "+"
+*** Semantic error: found "+"      expected EOF.
 Symbol: "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B" "C")
@@ -1666,10 +1725,15 @@ Symbol: "C"
 *** Semantic error: "C" not declared.
 *** Syntax error:   Expected END      found "C"
 *** Syntax error:   Expected FSTOP    found "C"
+*** Semantic error: found "C"      expected EOF.
 Symbol: "*"
+*** Semantic error: found "*"      expected EOF.
 Symbol: "2"
+*** Semantic error: found "2"      expected EOF.
 Symbol: "end"
+*** Semantic error: found "end"    expected EOF.
 Symbol: "."
+*** Semantic error: found "."      expected EOF.
 Symbol: ""
 ------------------------------------------------------
 Symbol Table is: ("A" "B")
