@@ -388,9 +388,12 @@
 
 (defun assign-stat (state)
    (if (pstate-isdebug state) (in "assign stat"))
-   (if (symtab-member state (lexeme state))
+   (if (eq (token state) 'ID)
+      (if (symtab-member state (lexeme state))
             (match state 'ID)
             (semerr2 state)
+      )
+      (match state 'ID)
    )
    (match state 'ASSIGN)
    (expr state)
