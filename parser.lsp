@@ -101,7 +101,7 @@
 ;;=====================================================================
 
 (defun map-lexeme (lexeme)
-(format t "Symbol: ~S ~%" lexeme)
+(format t "Symbol: ~S~%" lexeme)
    (list (cond
          ((string=   lexeme ""       )	 'EOF     )
          ;; keywords
@@ -123,15 +123,15 @@
          ((string=   lexeme "type"   )	 'TYPE    )
          ;; single character tokens
          ((string=   lexeme "$"      )	 '$       )
-         ((string=   lexeme "("      )	 'LPAREN  )
-         ((string=   lexeme ")"      )	 'RPAREN  )
+         ((string=   lexeme "("      )	 'LP      )
+         ((string=   lexeme ")"      )	 'RP      )
          ((string=   lexeme "*"      )	 '*       )
          ((string=   lexeme "+"      )	 '+       )
          ((string=   lexeme ","      )	 'COMMA   )
          ((string=   lexeme "-"      )	 '-       )
-         ((string=   lexeme "."      )	 'DOT     )
+         ((string=   lexeme "."      )	 'FSTOP     )
          ((string=   lexeme "/"      )	 '/       )
-         ((string=   lexeme ":"      )	 ':       )
+         ((string=   lexeme ":"      )	 'COLON       )
          ((string=   lexeme ";"      )	 'SCOLON  )
          ((string=   lexeme "="      )	 '=       )
          ;; lastly check if lexeme is id or number
@@ -216,7 +216,7 @@
       :nextchar      #\Space
       :status        'OK
       :symtab        ()
-      :isdebug       t
+      :isdebug       nil
     )
 )
 
@@ -241,16 +241,27 @@
 ;;=====================================================================
 
 (defun symtab-add (state id)
-;; *** TO BE DONE ***
+   (if (symtab-member state id)
+      (semerr1 state)
+      (setf (pstate-symtab state) (append (pstate-symtab state) (list id)))
+   )
+)
+
+(defun id-is-member (list id)
+   (cond
+      ( (null list)            nil      )   ;; if list is empty id does not exist
+      ( (string= (first list) id)   t   )    ;; match found
+      ( t  (id-is-member (cdr list) id) ) ;; rec goes throught rest of list
+   )
 )
 
 (defun symtab-member (state id)
-;; *** TO BE DONE ***
+   (id-is-member (pstate-symtab state) id)
 )
 
 (defun symtab-display (state)
    (format t "------------------------------------------------------~%")
-   (format t "Symbol Table is: ~S ~%" (pstate-symtab state))
+   (format t "Symbol Table is: ~S~%" (pstate-symtab state))
    (format t "------------------------------------------------------~%")
 )
 
@@ -259,19 +270,19 @@
 ;;=====================================================================
 
 (defun synerr1 (state symbol)
-    (format t "*** Syntax error:   Expected ~8S found ~8S ~%"
+    (format t "*** Syntax error:   Expected ~8S found ~S~%"
            symbol (lexeme state))
     (setf (pstate-status state) 'NOTOK)
 )
 
 (defun synerr2 (state)
-    (format t "*** Syntax error:   Expected TYPE     found ~S ~%"
+    (format t "*** Syntax error:   Expected TYPE     found ~S~%"
            (lexeme state))
     (setf (pstate-status state) 'NOTOK)
 )
 
 (defun synerr3 (state)
-    (format t "*** Syntax error:   Expected OPERAND  found ~S ~%"
+    (format t "*** Syntax error:   Expected OPERAND  found ~S~%"
            (lexeme state))
     (setf (pstate-status state) 'NOTOK)
 )
@@ -335,10 +346,27 @@
 
 (defun operand (state)
    (if (pstate-isdebug state) (in "operand"))
+   (cond
+      ( (eq (token state) 'NUM) (match state 'NUM) )
+      ( (eq (token state) 'ID ) 
+            (if (symtab-member state (lexeme state))
+               (match state 'ID)
+               (semerr2 state)
+            )
+      )
+      ( t                          (synerr3 state) )
+   )
 )
 
 (defun factor (state)
    (if (pstate-isdebug state) (in "factor"))
+   (if (eq (token state) 'LP)
+      (progn (match state 'LP)
+            (expr state)
+            (match state 'RP)
+      )
+      (operand state)   
+   )
 )
 
 
@@ -346,7 +374,7 @@
    (if (pstate-isdebug state) (in "term"))
    (factor state)
    (if (eq (token state) '*)
-      (progn (match state '*) term(state) )
+      (progn (match state '*) (term state) )
    )
 )
 
@@ -354,13 +382,16 @@
    (if (pstate-isdebug state) (in "expr"))
    (term state)
    (if (eq (token state) '+)
-      (progn (match state '+) expr(state) )
+      (progn (match state '+) (expr state) )
    )
 )
 
 (defun assign-stat (state)
    (if (pstate-isdebug state) (in "assign stat"))
-   (match state 'ID)
+   (if (symtab-member state (lexeme state))
+            (match state 'ID)
+            (semerr2 state)
+   )
    (match state 'ASSIGN)
    (expr state)
 )
@@ -383,7 +414,7 @@
    (match state 'BEGIN)
    (stat-list state)
    (match state 'END)
-   (match state 'DOT)
+   (match state 'FSTOP)
 )
 
 ;;=====================================================================
@@ -406,10 +437,10 @@
 
 (defun id-list (state)
    (if (pstate-isdebug state) (in "id-list"))
-   (if (eq (first (map-lexeme (lexeme state))) 'ID) ;; if lookahead == ID
+   (if (eq (token state) 'ID) ;; if lookahead == ID
       (if (symtab-member state (lexeme state)) 
          (semerr1 state)                           ;; if ID already added = error
-         (symtab-add state (lexeme state))        
+         (symtab-add state (lexeme state))
       )
    )
    (match state 'ID)
@@ -421,7 +452,7 @@
 (defun var-dec (state)
    (if (pstate-isdebug state) (in "var-dec"))
    (id-list state)
-   (match state ':)
+   (match state 'COLON)
    (typ state)
    (match state 'SCOLON)
 )
@@ -430,7 +461,7 @@
    (if (pstate-isdebug state) (in "var-dec-list"))
    (var-dec state)
    (if (eq (token state) 'ID)
-      (var-dec state)
+      (var-dec-list state)
    )
 )
 
@@ -448,11 +479,11 @@
    (if (pstate-isdebug state) (in "program header"))
    (match state 'PROGRAM)
    (match state 'ID)
-   (match state 'LPAREN)
+   (match state 'LP)
    (match state 'INPUT)
    (match state 'COMMA)
    (match state 'OUTPUT)
-   (match state 'RPAREN)
+   (match state 'RP)
    (match state 'SCOLON)
 )
 
@@ -479,7 +510,7 @@
 
 (defun parse (filename)
    (format t "~%------------------------------------------------------")
-   (format t "~%--- Parsing program: ~S " filename)
+   (format t "~%--- Parsing program: ~S" filename)
    (format t "~%------------------------------------------------------~%")
    (with-open-file (ip (open filename) :direction :input)
       (setf state (create-parser-state ip))
@@ -490,8 +521,8 @@
       (symtab-display state)
       )
    (if (eq (pstate-status state) 'OK)
-      (format t "Parse Successful. ~%")
-      (format t "Parse Fail. ~%")
+      (format t "Parse Successful.~%")
+      (format t "Parse Fail.~%")
       )
    (format t "------------------------------------------------------~%")
 )
@@ -500,9 +531,86 @@
 ; THE PARSER - parse all the test files
 ;;=====================================================================
 
-(defun parse-all ()
-;; *** TO BE DONE ***
+(defun feed-parse-rec (pathlist)
+   (if (null pathlist) 
+         nil
+         (progn
+            (parse (first pathlist))
+            (feed-parse-rec (cdr pathlist))
+         )
+   )
+)
 
+(defun parse-all ()
+   ;; List all functions within file
+   (format t 
+"i i i i i i i       ooooo    o        ooooooo   ooooo   ooooo
+I I I I I I I      8     8   8           8     8     o  8    8
+I  \ `+' /  I      8         8           8     8        8    8
+ \  `-+-'  /       8         8           8      ooooo   8oooo
+  `-__|__-'        8         8           8           8  8
+      |            8     o   8           8     o     8  8
+------+------       ooooo    8oooooo  ooo8ooo   ooooo   8
+
+Welcome to GNU CLISP 2.49 (2010-07-07) <http://clisp.cons.org/>
+
+Copyright (c) Bruno Haible, Michael Stoll 1992, 1993
+Copyright (c) Bruno Haible, Marcus Daniels 1994-1997
+Copyright (c) Bruno Haible, Pierpaolo Bernardi, Sam Steingold 1998
+Copyright (c) Bruno Haible, Sam Steingold 1999-2000
+Copyright (c) Sam Steingold, Bruno Haible 2001-2010
+
+Type :h and hit Enter for context help.
+")
+   (with-open-file (stream "parser.lsp")
+    (loop for form = (read stream nil nil)
+          while form
+          when (and (listp form) (eq (car form) 'defun))
+          do (format t "~a~%" (second form))))
+   (parse "testfiles/testa.pas")
+   (parse "testfiles/testb.pas") 
+   (parse "testfiles/testc.pas") 
+   (parse "testfiles/testd.pas") 
+   (parse "testfiles/teste.pas") 
+   (parse "testfiles/testf.pas") 
+   (parse "testfiles/testg.pas") 
+   (parse "testfiles/testh.pas") 
+   (parse "testfiles/testi.pas") 
+   (parse "testfiles/testj.pas") 
+   (parse "testfiles/testk.pas") 
+   (parse "testfiles/testl.pas") 
+   (parse "testfiles/testm.pas") 
+   (parse "testfiles/testn.pas") 
+   (parse "testfiles/testo.pas") 
+   (parse "testfiles/testp.pas") 
+   (parse "testfiles/testq.pas") 
+   (parse "testfiles/testr.pas") 
+   (parse "testfiles/tests.pas") 
+   (parse "testfiles/testt.pas") 
+   (parse "testfiles/testu.pas") 
+   (parse "testfiles/testv.pas") 
+   (parse "testfiles/testw.pas") 
+   (parse "testfiles/testx.pas") 
+   (parse "testfiles/testy.pas") 
+   (parse "testfiles/testz.pas")
+   (parse "testfiles/testok1.pas")
+   (parse "testfiles/testok2.pas")
+   (parse "testfiles/testok3.pas")
+   (parse "testfiles/testok4.pas")
+   (parse "testfiles/testok5.pas")         
+   (parse "testfiles/testok6.pas")
+   (parse "testfiles/testok7.pas")
+   (parse "testfiles/fun1.pas")
+   (parse "testfiles/fun2.pas")
+   (parse "testfiles/fun3.pas")
+   (parse "testfiles/fun4.pas")
+   (parse "testfiles/fun5.pas")
+   (parse "testfiles/sem1.pas")
+   (parse "testfiles/sem2.pas")
+   (parse "testfiles/sem3.pas")
+   (parse "testfiles/sem4.pas")
+   (parse "testfiles/sem5.pas")
+   ;;(feed-parse-rec (sort (directory "testfiles/testfun*") #'string<))
 )
 
 ;;=====================================================================
@@ -510,13 +618,13 @@
 ;;=====================================================================
 
 
-;;(parse-all)
+(parse-all)
 
 ;;=====================================================================
 ; THE PARSER - test a single file
 ;;=====================================================================
 
-(parse "testfiles/testok1.pas")
+;;(parse "testfiles/testok7.pas")
 
 ;;=====================================================================
 ; THE PARSER - end of code
