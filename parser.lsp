@@ -412,7 +412,7 @@
       ( (eq (token state) 'ID ) 
             (if (symtab-member state (lexeme state))
                (match state 'ID)
-               (semerr2 state)
+               (progn (semerr2 state) (get-token state))
             )
       )
       ( t                          (synerr3 state) )
