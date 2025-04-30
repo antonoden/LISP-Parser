@@ -1,5 +1,6 @@
 ;;=====================================================================
 ;; LISP READER & LEXER - new version 161202
+;; Programmed by Anton Odén on top of shell created by Donald Ross
 ;;=====================================================================
 
 ;;=====================================================================
@@ -300,10 +301,9 @@
 )
 
 (defun semerr3 (state)
-    (format t "*** Semantic error: found ~8S expected EOF.~%"
-          (lexeme state))
-    (setf (pstate-status state) 'NOTOK)
-    ;; *** TO BE DONE - completed! ***
+   (format t "*** Semantic error: found ~8S expected EOF.~%"
+      (lexeme state))
+   (setf (pstate-status state) 'NOTOK)
 )
 
 ;;=====================================================================
@@ -412,7 +412,7 @@
       ( (eq (token state) 'ID ) 
             (if (symtab-member state (lexeme state))
                (match state 'ID)
-               (progn (semerr2 state) (get-token state))
+               (progn (semerr2 state) (get-token state))  ;; if ID isn't declared, skip match and get next token
             )
       )
       ( t                          (synerr3 state) )
@@ -538,7 +538,7 @@
 )
 
 ;;=====================================================================
-; THE PARSER - parse all the test files
+; THE PARSER - feeds testfiles argumented in order recursivly
 ;;=====================================================================
 
 (defun feed-parse-rec (pathlist)
@@ -551,53 +551,46 @@
    )
 )
 
+;;=====================================================================
+; THE PARSER - Gives a sorted list of strings that is filepaths based 
+;              on argumented search. also trims "/app/"-part if it exist
+;              in directory filepath to match wanted results 
+;;=====================================================================
+
+(defun get-test-list (filepathsearch)
+   (sort                                  ;; sorts strings
+      (mapcar 
+         (lambda (s)          ;; deletes "/app/"-part, converts path to string
+            (if (search "/app/" (namestring s)) 
+               (subseq (namestring s) (length "/app/"))
+               (namestring s)
+            )
+         )  
+         (directory filepathsearch)         ;; gets a list of paths
+      )    
+      #'string<                           
+   )
+)
+
+;;=====================================================================
+; THE PARSER - parse all the test files
+;;=====================================================================
+
 (defun parse-all ()
    (p-header)
-   (parse "testfiles/testa.pas")
-   (parse "testfiles/testb.pas") 
-   (parse "testfiles/testc.pas") 
-   (parse "testfiles/testd.pas") 
-   (parse "testfiles/teste.pas") 
-   (parse "testfiles/testf.pas") 
-   (parse "testfiles/testg.pas") 
-   (parse "testfiles/testh.pas") 
-   (parse "testfiles/testi.pas") 
-   (parse "testfiles/testj.pas") 
-   (parse "testfiles/testk.pas") 
-   (parse "testfiles/testl.pas") 
-   (parse "testfiles/testm.pas") 
-   (parse "testfiles/testn.pas") 
-   (parse "testfiles/testo.pas") 
-   (parse "testfiles/testp.pas") 
-   (parse "testfiles/testq.pas") 
-   (parse "testfiles/testr.pas") 
-   (parse "testfiles/tests.pas") 
-   (parse "testfiles/testt.pas") 
-   (parse "testfiles/testu.pas") 
-   (parse "testfiles/testv.pas") 
-   (parse "testfiles/testw.pas") 
-   (parse "testfiles/testx.pas") 
-   (parse "testfiles/testy.pas") 
-   (parse "testfiles/testz.pas")
-   (parse "testfiles/testok1.pas")
-   (parse "testfiles/testok2.pas")
-   (parse "testfiles/testok3.pas")
-   (parse "testfiles/testok4.pas")
-   (parse "testfiles/testok5.pas")         
-   (parse "testfiles/testok6.pas")
-   (parse "testfiles/testok7.pas")
-   (parse "testfiles/fun1.pas")
-   (parse "testfiles/fun2.pas")
-   (parse "testfiles/fun3.pas")
-   (parse "testfiles/fun4.pas")
-   (parse "testfiles/fun5.pas")
-   (parse "testfiles/sem1.pas")
-   (parse "testfiles/sem2.pas")
-   (parse "testfiles/sem3.pas")
-   (parse "testfiles/sem4.pas")
-   (parse "testfiles/sem5.pas")
+   ;; IF other testfiles is added with other namestructure the fetching
+   ;; is hardcoded so need to be changed some if to be more dynamical to 
+   ;; added testfiles. 
+   (feed-parse-rec
+      (remove-if        ;; a remove needed to trim out testok
+         (lambda (s) (search "testok" s))
+         (get-test-list "testfiles/test*")   
+      )
+   )
+   (feed-parse-rec (get-test-list "testfiles/testok*"))
+   (feed-parse-rec (get-test-list "testfiles/fun*"))
+   (feed-parse-rec (get-test-list "testfiles/sem*"))
    (p-footer)
-   ;;(feed-parse-rec (sort (directory "testfiles/testfun*") #'string<))
 )
 
 (defun p-header ()
@@ -642,7 +635,6 @@ Bye.")
 ;;=====================================================================
 ; THE PARSER - test all files
 ;;=====================================================================
-
 
 (parse-all)
 
