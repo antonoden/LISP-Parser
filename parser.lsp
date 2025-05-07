@@ -164,6 +164,7 @@
    )
 )
 
+;; Check head and tail separably if ID as condition for the two is different. 
 (defun is-id (str)
    (if (is-id-head str)
       (if (is-id-tail str) t nil)
@@ -172,11 +173,17 @@
 )
 
 (defun is-number (str)
-   (if (string= str "")
-      t
-      (if (digit-char-p (char str 0))
-         (is-number (subseq str 1))
-         nil 
+   (if (string= str "")       ;; empty list returns nil
+      nil
+      (if (eq (length str) 1)          ;; if last sign in str reached is number return t, else nil
+         (if (digit-char-p (char str 0))
+            t
+            nil
+         )
+         (if (digit-char-p (car str))  ;; if head of str is number, keep checking tail, else nil
+            (is-number (cdr str))    
+            nil 
+         )
       )
    )
 )
